@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Collaborative Canvas</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.7/css/bootstrap.min.css"/>
+</head>
+<body>
+<div>
+    <p id="canvasInfo" />
+    <p>
+        <input type="button" value="Draw Test Data" id="testButton">
+        <input type="button" value="Zoom In" id="btnZoomIn">
+        <input type="button" value="Zoom Out" id="btnZoomOut">
+    </p>
+</div>
+<div class="container wrapper">
+    <canvas id="pixelArt" width=5500 height=5500></canvas>
+</div>
+
+<script type="text/javascript" src="/webjars/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+    // get canvas context
+    var canvas = document.getElementById('pixelArt').getContext('2d');
+
+    var gridX = 500; //TODO get from server
+    var gridY = 500; //TODO get from server
+    var defaultGridLine = 1;
+    var gridLine = defaultGridLine;
+    var pixel = 8;
+    var canvasWidth;
+    var canvasHeight;
+    var data;
+
+    clearCanvas();
+    initGrid();
+    loadData();
+
+    function clearCanvas() {
+        data = Array(gridX).fill("0").map(() => Array(gridY).fill([255, 255, 255, 255]));
+    }
+
+    function initGrid() {
+        canvasWidth = gridX * pixel + gridX * gridLine
+        canvasHeight = gridY * pixel + gridY * gridLine;
+
+        document.getElementById('canvasInfo').textContent = "Canvas is " + canvasWidth + "x" + canvasHeight + " pixels" + ", Grid is " + gridX + "x" + gridY + ", 1 pixel = " + pixel + " real pixels";
+
+        //draw the grid
+        canvas.strokeStyle = 'lightgrey';
+        canvas.lineWidth = gridLine;
+        if (gridLine > 0) {
+            canvas.beginPath();
+            for (i = 0; i < gridX + 1; i++) {
+                var column = i * pixel + i * gridLine;
+                canvas.moveTo(column, 0);
+                canvas.lineTo(column, canvasHeight);
+            }
+            for (i = 0; i < gridY + 1; i++) {
+                var row = i * pixel + i * gridLine;
+                canvas.moveTo(0, row);
+                canvas.lineTo(canvasWidth, row);
+            }
+            canvas.stroke();
+        }
+    }
+
+    function loadData() {
+        fetch("/canvas/full").then(function(response) {
+            if (response.ok) {
+                response.json().then(function(full) {
+                    for (x = 0; x < gridX; x++) {
+                        var column = full[x];
+                        for (y = 0; y < gridY; y++) {
+                            var pixelData = column[y];
+                            if (pixelData !== undefined) {
+                                var red = pixelData.color.red;
+                                var green = pixelData.color.green;
+                                var blue = pixelData.color.blue;
+                                var alpha = pixelData.color.alpha;
+
+                                data[x][y] = [red, green, blue, alpha];
+                            }
+                        }
+                    }
+                    return redrawData();
+                });
+            } else {
+                console.log('Network request for canvas json failed with response ' + response.status + ': ' + response.statusText);
+            }
+        })
+    }
+
+    function redrawData() {
+        for (x = 0; x < gridX; x++) {
+            var column = data[x];
+            for (y = 0; y < gridY; y++) {
+                var pixelData = column[y];
+                if (pixelData != undefined) {
+                    drawPixel(x, y, pixelData[0], pixelData[1], pixelData[2], pixelData[3]);
+                }
+            }
+        }
+    }
+
+    function drawPixel(x, y, r, g, b, a) {
+        canvas.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + (a / 255) + ')';
+        var realX = x * pixel + (x + 1) * gridLine;
+        var realY = y * pixel + (y + 1) * gridLine;
+        canvas.fillRect(realX, realY, pixel, pixel);
+        data[x][y] = [r, g, b, a];
+    }
+
+    function zoomIn() {
+        canvas.clearRect(0, 0, canvasWidth + 1, canvasHeight + 1);
+        pixel = pixel * 2;
+        if (pixel > 4) gridLine = defaultGridLine;
+        if (pixel > 64) {
+            pixel = 64;
+            console.log('pixel max 64px');
+        } else {
+            redrawData();
+            initGrid();
+        }
+    }
+
+    function zoomOut() {
+        if (pixel > 2) {
+            pixel = pixel / 2;
+            canvas.clearRect(0, 0, canvasWidth + 1, canvasHeight + 1);
+            if (pixel <= 4) {
+                gridLine = 0;
+            }
+            redrawData();
+            initGrid();
+        } else {
+            console.log('minimum pixel size 3px')
+        }
+    }
+
+    document.getElementById("testButton").addEventListener("click", loadData, false);
+
+    document.getElementById("btnZoomIn").addEventListener("click", zoomIn, false);
+
+    document.getElementById("btnZoomOut").addEventListener("click", zoomOut, false);
+
+
+    var pixelEventSource = new EventSource("/canvas/feed");
+    pixelEventSource.onmessage = function (e) {
+        var msg = JSON.parse(e.data);
+        if (msg.color !== undefined) {
+            drawPixel(msg.x, msg.y,
+                msg.color.red,
+                msg.color.green,
+                msg.color.blue,
+                msg.color.alpha);
+        }
+        else if (msg.instruction !== undefined) {
+            if (msg.instruction === "RELOAD") return loadData();
+            if (msg.instruction === "CLEAR") return clearCanvas().then(redrawData);
+        }
+        else {
+            console.warn("unrecognized message in feed: " + msg);
+        }
+    }
+
+</script>
+</body>
+</html>
