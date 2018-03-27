@@ -39,7 +39,9 @@ public class CanvasController {
 		this.canvasService = canvasService;
 	}
 
-	@PostMapping("/paint/")
+	@PostMapping(value = "/paint/",
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.TEXT_PLAIN_VALUE)
 	public Mono<ResponseEntity<String>> paintPixel(@RequestBody PaintInstruction paint) {
 		return userRepository
 				.findById(paint.getUserId())
