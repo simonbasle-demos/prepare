@@ -10,10 +10,16 @@
 <div>
     <p id="canvasInfo" />
     <p>
-        <input type="button" value="Draw Test Data" id="testButton">
+        <input type="button" value="Reload Full Canvas" id="btnReload">
         <input type="button" value="Zoom In" id="btnZoomIn">
         <input type="button" value="Zoom Out" id="btnZoomOut">
     </p>
+</div>
+<div class="header-panel">
+    <p>
+        Paint pixel <span id="selectX">?</span>,<span id="selectY">?</span> in:
+        <input type="color" value="#fad345" name="palette" id="palette">
+        <input type="button" value="Paint!" id="btnPaint">
 </div>
 <div class="container wrapper">
     <canvas id="pixelArt" width=5500 height=5500></canvas>
@@ -25,14 +31,19 @@
     // get canvas context
     var canvas = document.getElementById('pixelArt').getContext('2d');
 
-    var gridX = 500; //TODO get from server
-    var gridY = 500; //TODO get from server
+    var gridX = 100; //TODO get from server
+    var gridY = 50; //TODO get from server
     var defaultGridLine = 1;
     var gridLine = defaultGridLine;
     var pixel = 8;
     var canvasWidth;
     var canvasHeight;
     var data;
+    var selectedPixelX = -1;
+    var selectedPixelY = -1;
+    var gridColor = '#aaaaaa';
+    var gridSelectColor = '#FF5954';
+    var gridSelectColorForRed = '#BFFAFF';
 
     clearCanvas();
     initGrid();
@@ -49,7 +60,7 @@
         document.getElementById('canvasInfo').textContent = "Canvas is " + canvasWidth + "x" + canvasHeight + " pixels" + ", Grid is " + gridX + "x" + gridY + ", 1 pixel = " + pixel + " real pixels";
 
         //draw the grid
-        canvas.strokeStyle = 'lightgrey';
+        canvas.strokeStyle = gridColor;
         canvas.lineWidth = gridLine;
         if (gridLine > 0) {
             canvas.beginPath();
@@ -98,7 +109,7 @@
             var column = data[x];
             for (y = 0; y < gridY; y++) {
                 var pixelData = column[y];
-                if (pixelData != undefined) {
+                if (pixelData !== undefined) {
                     drawPixel(x, y, pixelData[0], pixelData[1], pixelData[2], pixelData[3]);
                 }
             }
@@ -107,22 +118,67 @@
 
     function drawPixel(x, y, r, g, b, a) {
         canvas.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + (a / 255) + ')';
+        canvas.strokeStyle = canvas.fillStyle;
         var realX = x * pixel + (x + 1) * gridLine;
         var realY = y * pixel + (y + 1) * gridLine;
         canvas.fillRect(realX, realY, pixel, pixel);
         data[x][y] = [r, g, b, a];
     }
 
+    function colorDistance(R1, G1, B1, R2, G2, B2) {
+        var cR=R1-R2;
+        var cG=G1-G2;
+        var cB=B1-B2;
+        var uR=R1+R2;
+        var distance = cR*cR*(2+uR/256) + cG*cG*4 + cB*cB*(2+(255-uR)/256);
+        return Math.round(distance / 1000);
+    }
+
+    function showSelection() {
+        var x = selectedPixelX;
+        var y = selectedPixelY;
+        if (x >= 0 && y >= 0 && gridLine > 0) {
+            var pixelData = data[x][y];
+            var r = pixelData[0];
+            var g = pixelData[1];
+            var b = pixelData[2];
+            var colorDiff = colorDistance(255, 0, 0, r, g, b);
+            if (colorDiff < 100) canvas.strokeStyle = gridSelectColorForRed;
+            else canvas.strokeStyle = gridSelectColor;
+
+            var w = Math.max(2, Math.floor(pixel / 5));
+            canvas.lineWidth = w;
+
+            var realX = x * pixel + (x + 1) * gridLine + w / 2;
+            var realY = y * pixel + (y + 1) * gridLine + w / 2;
+
+            canvas.strokeRect(realX, realY, pixel - w, pixel - w);
+        }
+    }
+
+    function clearSelection() {
+        var oldPixelX = selectedPixelX;
+        var oldPixelY = selectedPixelY;
+        if (oldPixelX >= 0 && oldPixelY >= 0) {
+            var pixelData = data[oldPixelX][oldPixelY];
+            if (pixelData !== undefined) {
+                drawPixel(oldPixelX, oldPixelY, 255, 255, 255, 255);
+                drawPixel(oldPixelX, oldPixelY, pixelData[0], pixelData[1], pixelData[2], pixelData[3]);
+            }
+        }
+    }
+
     function zoomIn() {
-        canvas.clearRect(0, 0, canvasWidth + 1, canvasHeight + 1);
         pixel = pixel * 2;
         if (pixel > 4) gridLine = defaultGridLine;
         if (pixel > 64) {
             pixel = 64;
             console.log('pixel max 64px');
         } else {
-            redrawData();
+            canvas.clearRect(0, 0, canvasWidth + 1, canvasHeight + 1);
             initGrid();
+            redrawData();
+            showSelection();
         }
     }
 
@@ -133,18 +189,93 @@
             if (pixel <= 4) {
                 gridLine = 0;
             }
-            redrawData();
             initGrid();
+            redrawData();
+            showSelection();
         } else {
             console.log('minimum pixel size 3px')
         }
     }
 
-    document.getElementById("testButton").addEventListener("click", loadData, false);
+    function selectPixel(e) { // mouse click handler
+        clearSelection();
+        var canvasX = e.offsetX;
+        var canvasY = e.offsetY;
+
+        if (canvasX > canvasWidth || canvasY > canvasHeight) {
+            selectedPixelX = -1;
+            selectedPixelY = -1;
+            document.getElementById("selectX").textContent = "?";
+            document.getElementById("selectY").textContent = "?";
+            clearSelection();
+            return;
+        }
+
+        selectedPixelX = Math.floor(canvasX / (pixel + gridLine));
+        selectedPixelY = Math.floor(canvasY / (pixel + gridLine));
+
+        /* window.alert("canvas clicked at " + canvasX + ", " + canvasY + " which is pixel " + pixelX + "," + pixelY); */
+
+        showSelection();
+
+        document.getElementById("selectX").textContent = selectedPixelX;
+        document.getElementById("selectY").textContent = selectedPixelY;
+        // document.getElementById("palette").value = colorHex(selectedPixelX,selectedPixelY);
+    }
+
+    function colorHex(x, y) {
+        var pixelData = data[x][y];
+        var r = pixelData[0];
+        var g = pixelData[1];
+        var b = pixelData[2];
+
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    function hexToRgba(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            red: parseInt(result[1], 16),
+            green: parseInt(result[2], 16),
+            blue: parseInt(result[3], 16),
+            alpha: 255
+        } : null;
+    }
+
+    function sendPaint() {
+        if (selectedPixelX >= 0 && selectedPixelY >= 0) {
+            var colorHex = document.getElementById("palette").value;
+            var colorRGBA = hexToRgba(colorHex);
+            var paintInstruction = {
+                x: selectedPixelX,
+                y: selectedPixelY,
+                color: colorRGBA,
+                userId: 0 //TODO change with auth and auth-ed user
+            };
+
+            fetch("/paint/",
+                {
+                    headers: {
+                        'Accept': 'text/plain',
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST',
+                    body: JSON.stringify(paintInstruction)
+                })
+                .then(function(res){ console.log(res) })
+                .catch(function(res){ console.log(res) })
+        }
+    }
+
+    document.getElementById("btnReload").addEventListener("click", loadData, false);
 
     document.getElementById("btnZoomIn").addEventListener("click", zoomIn, false);
 
     document.getElementById("btnZoomOut").addEventListener("click", zoomOut, false);
+
+    document.getElementById("btnPaint").addEventListener("click", sendPaint, false);
+
+    document.getElementById("pixelArt").addEventListener("click", selectPixel, false);
 
 
     var pixelEventSource = new EventSource("/canvas/feed");
