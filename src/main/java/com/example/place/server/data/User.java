@@ -12,9 +12,9 @@ public class User {
 	public final String login;
 	public long lastUpdate;
 
-	public User(Long id, String login, long update) {
+	public User(Long id, String login, long lastUpdate) {
 		this.id = id;
 		this.login = login;
-		lastUpdate = update;
+		lastUpdate = lastUpdate;
 	}
 }

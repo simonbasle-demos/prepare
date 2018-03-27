@@ -3,7 +3,6 @@ package com.example.place.server;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import com.example.place.server.data.Color;
 import com.example.place.server.data.FeedMessage;
 import com.example.place.server.data.PaintInstruction;
 import com.example.place.server.data.Pixel;
@@ -18,9 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.http.ResponseEntity.accepted;
-import static org.springframework.http.ResponseEntity.badRequest;
-import static org.springframework.http.ResponseEntity.notFound;
+import static org.springframework.http.ResponseEntity.*;
 
 /**
  * @author Simon Baslé
@@ -45,12 +42,12 @@ public class CanvasController {
 	@PostMapping("/paint/")
 	public Mono<ResponseEntity<String>> paintPixel(@RequestBody PaintInstruction paint) {
 		return userRepository
-				.findById(paint.userId)
+				.findById(paint.getUserId())
 				.flatMap(u -> {
 					boolean ok = rateLimitingService.checkRate(
 							LocalDateTime.ofEpochSecond(u.lastUpdate, 0, ZoneOffset.UTC));
 
-					if (ok) return paintService.paint(paint.x, paint.y, paint.color, u)
+					if (ok) return paintService.paint(paint.getX(), paint.getY(), paint.getColor(), u)
 					                           .thenReturn(u);
 					else
 						return Mono.error(new RateLimitingException("you cannot paint yet"));
