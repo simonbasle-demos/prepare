@@ -10,16 +10,16 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "email")
 public class EmailProperties {
 
-	private String baseUrl;
+	private String apiUrl;
 	private String apiKey;
 	private String from;
 
-	public String getBaseUrl() {
-		return baseUrl;
+	public String getApiUrl() {
+		return apiUrl;
 	}
 
-	public void setBaseUrl(String baseUrl) {
-		this.baseUrl = baseUrl;
+	public void setApiUrl(String apiUrl) {
+		this.apiUrl = apiUrl;
 	}
 
 	public String getApiKey() {
