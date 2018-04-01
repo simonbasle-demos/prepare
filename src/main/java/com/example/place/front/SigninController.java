@@ -61,27 +61,12 @@ public class SigninController {
 		                     );
 	}
 
-	private void authenticate (String userEmail, String userToken) {
-		String token = tokenService.get(userEmail);
-		if(!token.equals(userToken)) {
-			throw new BadCredentialsException("Invalid auth token for user: " + userEmail);
-		}
-
-		userDetailsManager.createUser(
-				withDefaultPasswordEncoder()
-						.username("admin")
-						.password("")
-						.roles("USER")
-						.build());
-	}
-
 	@GetMapping("/signin/{token}")
 	public String signin (@RequestParam("uid") String uid, @PathVariable("token") String token) {
-		try {
-			authenticate(uid, token);
-			return "redirect:/";
+		if (tokenService.authenticate(uid, token)) {
+			return "redirect:/?email=" + uid + "&token=" + token;
 		}
-		catch (BadCredentialsException badCredentialsException) {
+		else {
 			return "invalid_login_link";
 		}
 	}

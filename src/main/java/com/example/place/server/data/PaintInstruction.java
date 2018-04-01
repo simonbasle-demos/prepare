@@ -3,19 +3,20 @@ package com.example.place.server.data;
 /**
  * @author Simon Baslé
  */
-
 public class PaintInstruction {
 
-	int    x;
-	int    y;
-	Color  color;
-	String userEmail;
+	private int    x;
+	private int    y;
+	private Color  color;
+	private String userId;
+	private String userToken;
 
-	public PaintInstruction(int x, int y, Color color, String userId) {
+	public PaintInstruction(int x, int y, Color color, String userId, String userToken) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
-		this.userEmail = userId;
+		this.userId = userId;
+		this.userToken = userToken;
 	}
 
 	public PaintInstruction() {
@@ -46,10 +47,18 @@ public class PaintInstruction {
 	}
 
 	public String getUserId() {
-		return userEmail;
+		return userId;
 	}
 
 	public void setUserId(String userId) {
-		this.userEmail= userId;
+		this.userId = userId;
+	}
+
+	public String getUserToken() {
+		return userToken;
+	}
+
+	public void setUserToken(String userToken) {
+		this.userToken = userToken;
 	}
 }

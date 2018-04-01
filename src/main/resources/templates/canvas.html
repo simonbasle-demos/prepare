@@ -17,9 +17,14 @@
 </div>
 <div class="header-panel">
     <p>
+        <input type="text" placeholder="email" id="txtEmail" th:value="*{email}"/>
+        <input type="text" placeholder="token" id="txtToken" th:value="*{token}"/>
+    </p>
+    <p>
         Paint pixel <span id="selectX">?</span>,<span id="selectY">?</span> in:
         <input type="color" value="#fad345" name="palette" id="palette">
         <input type="button" value="Paint!" id="btnPaint">
+        <span id="paintResult"></span>
 </div>
 <div class="container wrapper">
     <canvas id="pixelArt" width=5500 height=5500></canvas>
@@ -44,6 +49,8 @@
     var gridColor = '#aaaaaa';
     var gridSelectColor = '#FF5954';
     var gridSelectColorForRed = '#BFFAFF';
+
+    var paintResult = document.getElementById("paintResult");
 
     clearCanvas();
     initGrid();
@@ -157,6 +164,7 @@
     }
 
     function clearSelection() {
+        paintResult.textContent = "";
         var oldPixelX = selectedPixelX;
         var oldPixelY = selectedPixelY;
         if (oldPixelX >= 0 && oldPixelY >= 0) {
@@ -243,16 +251,22 @@
     }
 
     function sendPaint() {
+        paintResult.textContent = "";
+
         if (selectedPixelX >= 0 && selectedPixelY >= 0) {
+            var email = document.getElementById("txtEmail").value;
+            var token = document.getElementById("txtToken").value;
             var colorHex = document.getElementById("palette").value;
             var colorRGBA = hexToRgba(colorHex);
             var paintInstruction = {
                 x: selectedPixelX,
                 y: selectedPixelY,
                 color: colorRGBA,
-                userId: 0 //TODO change with auth and auth-ed user
+                userId: email,
+                userToken: token
             };
 
+            paintResult.textContent = "sending paint...";
             fetch("/paint/",
                 {
                     headers: {
@@ -262,8 +276,14 @@
                     method: 'POST',
                     body: JSON.stringify(paintInstruction)
                 })
-                .then(function(res){ console.log(res) })
-                .catch(function(res){ console.log(res) })
+                .then(function(res){
+                    console.log(res);
+                    paintResult.textContent = res.statusText;
+                })
+                .catch(function(res){
+                    console.log(res);
+                    paintResult.textContent = res.statusText;
+                })
         }
     }
 

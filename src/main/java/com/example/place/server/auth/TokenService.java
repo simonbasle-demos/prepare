@@ -19,7 +19,7 @@ public class TokenService {
 	private static final int TOKEN_BYTE_SIZE = 16;
 
 	private final Map<Object, Object> store = Caffeine.newBuilder()
-	                                                  .expireAfterWrite(Duration.ofMinutes(15))
+	                                                  .expireAfterWrite(Duration.ofMinutes(30))
 	                                                  .build()
 	                                                  .asMap();
 
@@ -37,9 +37,16 @@ public class TokenService {
 
 	public String get(String userEmail) {
 		Objects.requireNonNull(userEmail,"user email can't be null");
-		Object token = store.remove(userEmail);
+		Object token = store.get(userEmail);
 		if (token == null) return null;
 		return String.valueOf(token);
+	}
+
+	public boolean authenticate(String uid, String token) {
+		if (uid == null || token == null) return false;
+		String expectedToken = get(uid);
+		if (expectedToken == null) return false;
+		return token.equals(expectedToken);
 	}
 
 }
