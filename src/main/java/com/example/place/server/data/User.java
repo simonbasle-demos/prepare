@@ -8,13 +8,11 @@ import org.springframework.data.annotation.Id;
 public class User {
 
 	@Id
-	public final Long id;
-	public final String login;
-	public long lastUpdate;
+	public final String email;
+	public long         lastUpdate;
 
-	public User(Long id, String login, long lastUpdate) {
-		this.id = id;
-		this.login = login;
+	public User(String email, long lastUpdate) {
+		this.email = email;
 		lastUpdate = lastUpdate;
 	}
 }

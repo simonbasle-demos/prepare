@@ -27,6 +27,8 @@ repositories {
 dependencies {
   compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
   compile('org.springframework.boot:spring-boot-starter-webflux')
+  compile('org.springframework.boot:spring-boot-starter-security')
+  compile 'com.github.ben-manes.caffeine:caffeine:2.6.2'
   compile('io.projectreactor:reactor-core:3.1.5.RELEASE') //TODO use BOM
   runtime('org.springframework.boot:spring-boot-starter-thymeleaf')
   runtime('org.webjars:bootstrap:3.3.7')

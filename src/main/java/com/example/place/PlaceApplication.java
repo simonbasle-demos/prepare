@@ -23,7 +23,7 @@ public class PlaceApplication {
 			@Autowired UserRepository userRepository) {
 		return args -> Mono.when(
 				canvasService.loadData().then(),
-				userRepository.save(new User(0L, "simonbasle", 0L))
+				userRepository.save(new User("simon.basle@dev.null", 0L))
 		).block();
 	}
 }

@@ -6,16 +6,16 @@ package com.example.place.server.data;
 
 public class PaintInstruction {
 
-	int   x;
-	int   y;
-	Color color;
-	Long  userId;
+	int    x;
+	int    y;
+	Color  color;
+	String userEmail;
 
-	public PaintInstruction(int x, int y, Color color, Long userId) {
+	public PaintInstruction(int x, int y, Color color, String userId) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
-		this.userId = userId;
+		this.userEmail = userId;
 	}
 
 	public PaintInstruction() {
@@ -45,11 +45,11 @@ public class PaintInstruction {
 		this.color = color;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public String getUserId() {
+		return userEmail;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setUserId(String userId) {
+		this.userEmail= userId;
 	}
 }
