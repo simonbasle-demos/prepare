@@ -13,6 +13,6 @@ public class User {
 
 	public User(String email, long lastUpdate) {
 		this.email = email;
-		lastUpdate = lastUpdate;
+		this.lastUpdate = lastUpdate;
 	}
 }
