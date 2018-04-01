@@ -57,6 +57,7 @@ public class CanvasController {
 	public Mono<ResponseEntity<String>> paintPixel(@RequestBody PaintInstruction paint) {
 		if (!tokenService.authenticate(paint.getUserId(), paint.getUserToken())) {
 			LOG.warn("Invalid auth token for user: " + paint.getUserId());
+			return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build());
 		}
 
 		return userRepository
