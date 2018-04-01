@@ -4,14 +4,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-import com.example.place.server.CanvasRepository;
-import com.example.place.server.CanvasService;
+import com.example.place.server.canvas.CanvasRepository;
+import com.example.place.server.canvas.CanvasService;
 import com.example.place.server.data.Color;
 import com.example.place.server.data.Pixel;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

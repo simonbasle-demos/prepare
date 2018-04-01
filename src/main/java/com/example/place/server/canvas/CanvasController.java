@@ -1,8 +1,9 @@
-package com.example.place.server;
+package com.example.place.server.canvas;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import com.example.place.server.user.UserRepository;
 import com.example.place.server.auth.TokenService;
 import com.example.place.server.data.FeedMessage;
 import com.example.place.server.data.PaintInstruction;

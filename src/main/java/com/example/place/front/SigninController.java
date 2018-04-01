@@ -1,13 +1,12 @@
 package com.example.place.front;
 
-import com.example.place.server.UserRepository;
+import com.example.place.server.user.UserRepository;
 import com.example.place.server.auth.TokenService;
 import com.example.place.server.data.User;
 import com.example.place.server.auth.ISigninService;
 import reactor.core.publisher.Mono;
 
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
@@ -16,8 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import static org.springframework.security.core.userdetails.User.withDefaultPasswordEncoder;
 
 /**
  * @author Simon Baslé

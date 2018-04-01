@@ -1,7 +1,7 @@
 package com.example.place;
 
-import com.example.place.server.CanvasService;
-import com.example.place.server.UserRepository;
+import com.example.place.server.canvas.CanvasService;
+import com.example.place.server.user.UserRepository;
 import com.example.place.server.auth.SigninProperties;
 import com.example.place.server.data.User;
 import com.example.place.server.email.EmailProperties;

@@ -1,4 +1,4 @@
-package com.example.place.server;
+package com.example.place.server.canvas;
 
 import com.example.place.server.data.Color;
 import com.example.place.server.data.FeedMessage;
