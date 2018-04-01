@@ -6,6 +6,10 @@ import java.time.ZoneOffset;
 import com.example.place.server.data.FeedMessage;
 import com.example.place.server.data.PaintInstruction;
 import com.example.place.server.data.Pixel;
+import com.example.place.server.rate.RateLimitingException;
+import com.example.place.server.rate.RateLimitingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -24,6 +28,8 @@ import static org.springframework.http.ResponseEntity.*;
  */
 @RestController
 public class CanvasController {
+
+	private static final Logger LOG = LoggerFactory.getLogger(CanvasController.class);
 
 	private final UserRepository userRepository;
 	private final RateLimitingService rateLimitingService;

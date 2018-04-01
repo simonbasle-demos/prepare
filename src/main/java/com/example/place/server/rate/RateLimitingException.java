@@ -1,4 +1,4 @@
-package com.example.place.server;
+package com.example.place.server.rate;
 
 /**
  * @author Simon Baslé

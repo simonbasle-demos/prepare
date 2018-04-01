@@ -1,4 +1,4 @@
-package com.example.place.server;
+package com.example.place.server.rate;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -11,17 +11,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class RateLimitingService {
 
-	private Duration delay = Duration.ZERO;
+	private final RateLimitingProperties conf;
+
+	public RateLimitingService(RateLimitingProperties conf) {
+		this.conf = conf;
+	}
 
 	public void setDelay(Duration newDelay) {
-		this.delay = delay;
+		this.conf.setDelay(newDelay);
 	}
 
 	public Duration getDelay() {
-		return delay;
+		return conf.getDelay();
 	}
 
 	public boolean checkRate(LocalDateTime lastUpdate) {
-		return lastUpdate.plus(delay).isBefore(LocalDateTime.now());
+		return lastUpdate.plus(getDelay()).isBefore(LocalDateTime.now());
 	}
 }
