@@ -25,14 +25,12 @@ public class SigninController {
 	private final TokenService               tokenService;
 	private final ISigninService             signinService;
 	private final UserRepository             userRepository;
-	private final InMemoryUserDetailsManager userDetailsManager;
 
 	public SigninController(TokenService tokenService, ISigninService signinService,
-			UserRepository userRepository, InMemoryUserDetailsManager manager) {
+			UserRepository userRepository) {
 		this.tokenService = tokenService;
 		this.signinService = signinService;
 		this.userRepository = userRepository;
-		this.userDetailsManager = manager;
 	}
 
 	@GetMapping("/signin")
