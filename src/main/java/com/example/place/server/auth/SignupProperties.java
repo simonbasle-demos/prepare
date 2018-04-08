@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Simon Baslé
  */
 @Configuration
-@ConfigurationProperties(prefix = "signin")
-public class SigninProperties {
+@ConfigurationProperties(prefix = "signup")
+public class SignupProperties {
 
 	private String siteUrl;
 	private String method;

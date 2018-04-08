@@ -1,10 +1,12 @@
 package com.example.place.front;
 
+import java.security.Principal;
 import java.util.Map;
+
+import reactor.core.publisher.Mono;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author Simon Baslé
@@ -13,14 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class HomeController {
 
 	@GetMapping("/")
-	public String home(@RequestParam(required = false) String email,
-			@RequestParam(required = false) String token,
+	public Mono<String> home(Mono<Principal> principalMono,
 			Map<String, Object> model) {
-		if (email != null && token != null) {
-			model.put("email", email);
-			model.put("token", token);
-		}
-		return "canvas";
+		return principalMono
+				.doOnNext(principal -> model.put("user", principal.getName()))
+				.thenReturn("canvas");
 	}
 
 }

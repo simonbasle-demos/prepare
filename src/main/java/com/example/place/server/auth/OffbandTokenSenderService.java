@@ -5,18 +5,18 @@ import reactor.core.publisher.Mono;
 /**
  * @author Simon Baslé
  */
-public class OffbandSigningService implements ISigninService {
+public class OffbandTokenSenderService implements ITokenSenderService {
 
-	private final SigninProperties conf;
+	private final SignupProperties conf;
 
-	public OffbandSigningService(SigninProperties conf) {
+	public OffbandTokenSenderService(SignupProperties conf) {
 		this.conf = conf;
 	}
 
 	@Override
 	public Mono<String> send(String userEmail, String aToken) {
 		return Mono.fromRunnable(() -> System.out.println(
-				String.format("Sign in of %s -> %s (%s/signin/%s?uid=%s)", userEmail, aToken,
+				String.format("Sign up of %s -> %s (%s/signup/%s?uid=%s)", userEmail, aToken,
 						conf.getSiteUrl(), aToken, userEmail)))
 		           .thenReturn("ok");
 	}

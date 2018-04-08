@@ -1,15 +1,16 @@
 package com.example.place.server.canvas;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import com.example.place.server.user.UserRepository;
 import com.example.place.server.auth.TokenService;
 import com.example.place.server.data.FeedMessage;
 import com.example.place.server.data.PaintInstruction;
 import com.example.place.server.data.Pixel;
 import com.example.place.server.rate.RateLimitingException;
 import com.example.place.server.rate.RateLimitingService;
+import com.example.place.server.user.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -54,14 +55,10 @@ public class CanvasController {
 	@PostMapping(value = "/paint/",
 			consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.TEXT_PLAIN_VALUE)
-	public Mono<ResponseEntity<String>> paintPixel(@RequestBody PaintInstruction paint) {
-		if (!tokenService.authenticate(paint.getUserId(), paint.getUserToken())) {
-			LOG.warn("Invalid auth token for user: " + paint.getUserId());
-			return Mono.just(ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build());
-		}
-
-		return userRepository
-				.findById(paint.getUserId())
+	public Mono<ResponseEntity<String>> paintPixel(@RequestBody PaintInstruction paint, Mono<Principal> principalMono) {
+		return principalMono
+				.map(Principal::getName)
+				.flatMap(userRepository::findById)
 				.flatMap(u -> {
 					boolean ok = rateLimitingService.checkRate(
 							LocalDateTime.ofEpochSecond(u.lastUpdate, 0, ZoneOffset.UTC));

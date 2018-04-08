@@ -9,14 +9,12 @@ public class PaintInstruction {
 	private int    y;
 	private Color  color;
 	private String userId;
-	private String userToken;
 
-	public PaintInstruction(int x, int y, Color color, String userId, String userToken) {
+	public PaintInstruction(int x, int y, Color color, String userId) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.userId = userId;
-		this.userToken = userToken;
 	}
 
 	public PaintInstruction() {
@@ -52,13 +50,5 @@ public class PaintInstruction {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
-	}
-
-	public String getUserToken() {
-		return userToken;
-	}
-
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
 	}
 }

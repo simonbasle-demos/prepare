@@ -1,11 +1,11 @@
 package com.example.place.server.auth;
 
+import reactor.core.publisher.Mono;
+
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 /**
@@ -17,21 +17,22 @@ public class SecurityConfig {
 	@Bean
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 		return http
-				.httpBasic().disable()
-		           .csrf().disable()
-		           .authorizeExchange()
-				//TODO secure admin and pain
-//				.pathMatchers(HttpMethod.POST, "/paint/").hasRole("USER")
+				.csrf().disable()
+				.formLogin()
+				.and()
+				.authorizeExchange()
+				.pathMatchers("/admin/**")
+				.access((authentication, object) ->
+						Mono.just(new AuthorizationDecision(
+								object.getExchange()
+								      .getRequest()
+								      .getRemoteAddress()
+								      .getAddress()
+								      .isLoopbackAddress())))
+				.pathMatchers("/paint/").authenticated()
 				.anyExchange().permitAll()
 				.and()
 				.build();
-	}
-
-	@Bean
-	public UserDetailsManager userDetailsService() throws Exception {
-		// ensure the passwords are encoded properly
-		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-		return manager;
 	}
 
 }

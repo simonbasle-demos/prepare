@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
  * @author Simon Baslé
  */
 @Service
-public interface ISigninService {
+public interface ITokenSenderService {
 
 	Mono<String> send(String userEmail, String aToken);
 

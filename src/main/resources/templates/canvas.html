@@ -15,16 +15,17 @@
         <input type="button" value="Zoom Out" id="btnZoomOut">
     </p>
 </div>
-<div class="header-panel">
+
+<div class="header-panel" th:if="*{user}">
     <p>
-        <input type="text" placeholder="email" id="txtEmail" th:value="*{email}"/>
-        <input type="password" placeholder="token" id="txtToken" th:value="*{token}"/>
+        You are using Paint Token for <span th:text="*{user}"></span>
     </p>
     <p>
         Paint pixel <span id="selectX">?</span>,<span id="selectY">?</span> in:
         <input type="color" value="#fad345" name="palette" id="palette">
         <input type="button" value="Paint!" id="btnPaint">
         <span id="paintResult"></span>
+    </p>
 </div>
 <div class="container wrapper">
     <canvas id="pixelArt" width=5500 height=5500></canvas>
@@ -254,27 +255,26 @@
         paintResult.textContent = "";
 
         if (selectedPixelX >= 0 && selectedPixelY >= 0) {
-            var email = document.getElementById("txtEmail").value;
-            var token = document.getElementById("txtToken").value;
             var colorHex = document.getElementById("palette").value;
             var colorRGBA = hexToRgba(colorHex);
             var paintInstruction = {
                 x: selectedPixelX,
                 y: selectedPixelY,
-                color: colorRGBA,
-                userId: email,
-                userToken: token
+                color: colorRGBA
             };
 
             paintResult.textContent = "sending paint...";
             fetch("/paint/",
                 {
+                    body: JSON.stringify(paintInstruction),
+                    cache: 'no-cache',
+                    credentials: 'include',
                     headers: {
                         'Accept': 'text/plain',
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
                     method: 'POST',
-                    body: JSON.stringify(paintInstruction)
+                    redirect: 'error'
                 })
                 .then(function(res){
                     console.log(res);
@@ -282,7 +282,7 @@
                 })
                 .catch(function(res){
                     console.log(res);
-                    paintResult.textContent = res.statusText;
+                    paintResult.textContent = "Please Sign Up and/or Log In";
                 })
         }
     }

@@ -1,13 +1,12 @@
 package com.example.place.front;
 
-import com.example.place.server.user.UserRepository;
+import com.example.place.server.auth.ITokenSenderService;
 import com.example.place.server.auth.TokenService;
 import com.example.place.server.data.User;
-import com.example.place.server.auth.ISigninService;
+import com.example.place.server.user.UserRepository;
 import reactor.core.publisher.Mono;
 
 import org.springframework.http.MediaType;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,26 +19,26 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author Simon Baslé
  */
 @Controller
-public class SigninController {
+public class SignupController {
 
-	private final TokenService               tokenService;
-	private final ISigninService             signinService;
-	private final UserRepository             userRepository;
+	private final TokenService        tokenService;
+	private final ITokenSenderService tokenSenderService;
+	private final UserRepository      userRepository;
 
-	public SigninController(TokenService tokenService, ISigninService signinService,
+	public SignupController(TokenService tokenService, ITokenSenderService tokenSenderService,
 			UserRepository userRepository) {
 		this.tokenService = tokenService;
-		this.signinService = signinService;
+		this.tokenSenderService = tokenSenderService;
 		this.userRepository = userRepository;
 	}
 
-	@GetMapping("/signin")
-	public String signin () {
-		return "signin";
+	@GetMapping("/signup")
+	public String signup() {
+		return "signup";
 	}
 
-	@PostMapping(value = "/signin", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public Mono<String> signin(@RequestBody MultiValueMap<String, String> body) {
+	@PostMapping(value = "/signup", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	public Mono<String> signup(@RequestBody MultiValueMap<String, String> body) {
 		String email = body.getFirst("email");
 		if (email.isEmpty()) {
 			return Mono.just("error");
@@ -51,18 +50,19 @@ public class SigninController {
 		                     //create a token
 		                     .map(it -> tokenService.createToken(it.email))
 		                     //send the token by email
-		                     .flatMap(token -> signinService.send(email, token)
-		                                                    .map(response -> "login_link_sent")
+		                     .flatMap(token -> tokenSenderService.send(email, token)
+		                                                         .map(response -> "login_link_sent")
 		                     );
 	}
 
-	@GetMapping("/signin/{token}")
-	public String signin (@RequestParam("uid") String uid, @PathVariable("token") String token) {
+	@GetMapping("/signup/{token}")
+	public String signup(@RequestParam("uid") String uid, @PathVariable("token") String token) {
 		if (tokenService.authenticate(uid, token)) {
-			return "redirect:/?email=" + uid + "&token=" + token;
+			return "redirect:/login";
 		}
 		else {
 			return "invalid_login_link";
 		}
 	}
+
 }
