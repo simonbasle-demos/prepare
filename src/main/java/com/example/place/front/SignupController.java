@@ -1,5 +1,8 @@
 package com.example.place.front;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 import com.example.place.server.auth.ITokenSenderService;
 import com.example.place.server.auth.TokenService;
 import com.example.place.server.data.User;
@@ -46,7 +49,8 @@ public class SignupController {
 		// verify that the user is in the database.
 		return userRepository.findById(email)
 		                     //otherwise create it
-		                     .switchIfEmpty(userRepository.save(new User(email, System.currentTimeMillis())))
+		                     .switchIfEmpty(userRepository.save(new User(email,
+				                     LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))))
 		                     //create a token
 		                     .map(it -> tokenService.createToken(it.email))
 		                     //send the token by email
