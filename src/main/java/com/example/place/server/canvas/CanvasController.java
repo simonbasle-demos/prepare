@@ -4,7 +4,6 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import com.example.place.server.auth.TokenService;
 import com.example.place.server.data.FeedMessage;
 import com.example.place.server.data.PaintInstruction;
 import com.example.place.server.data.Pixel;
@@ -39,17 +38,14 @@ public class CanvasController {
 	private final RateLimitingService rateLimitingService;
 	private final PaintService        paintService;
 	private final CanvasService       canvasService;
-	private final TokenService        tokenService;
 
 	@Autowired //yeah don't really need that anymore
 	public CanvasController(UserRepository repository, RateLimitingService service,
-			PaintService paintService, CanvasService canvasService,
-			TokenService tokenService) {
+			PaintService paintService, CanvasService canvasService) {
 		this.userRepository = repository;
 		this.rateLimitingService = service;
 		this.paintService = paintService;
 		this.canvasService = canvasService;
-		this.tokenService = tokenService;
 	}
 
 	@PostMapping(value = "/paint/",

@@ -251,6 +251,35 @@
         } : null;
     }
 
+
+    var pixelEventSource = new EventSource("/canvas/feed");
+    pixelEventSource.onmessage = function (e) {
+        var msg = JSON.parse(e.data);
+        if (msg.color !== undefined) {
+            drawPixel(msg.x, msg.y,
+                msg.color.red,
+                msg.color.green,
+                msg.color.blue,
+                msg.color.alpha);
+        }
+        else if (msg.instruction !== undefined) {
+            if (msg.instruction === "RELOAD") return loadData();
+            if (msg.instruction === "CLEAR") return clearCanvas().then(redrawData);
+        }
+        else {
+            console.warn("unrecognized message in feed: " + msg);
+        }
+    }
+
+    document.getElementById("btnReload").addEventListener("click", loadData, false);
+    document.getElementById("btnZoomIn").addEventListener("click", zoomIn, false);
+    document.getElementById("btnZoomOut").addEventListener("click", zoomOut, false);
+    document.getElementById("pixelArt").addEventListener("click", selectPixel, false);
+</script>
+
+<script th:if="*{user}">
+    document.getElementById("btnPaint").addEventListener("click", sendPaint, false);
+
     function sendPaint() {
         paintResult.textContent = "";
 
@@ -284,36 +313,6 @@
                     console.log(res);
                     paintResult.textContent = "Please Sign Up and/or Log In";
                 })
-        }
-    }
-
-    document.getElementById("btnReload").addEventListener("click", loadData, false);
-
-    document.getElementById("btnZoomIn").addEventListener("click", zoomIn, false);
-
-    document.getElementById("btnZoomOut").addEventListener("click", zoomOut, false);
-
-    document.getElementById("btnPaint").addEventListener("click", sendPaint, false);
-
-    document.getElementById("pixelArt").addEventListener("click", selectPixel, false);
-
-
-    var pixelEventSource = new EventSource("/canvas/feed");
-    pixelEventSource.onmessage = function (e) {
-        var msg = JSON.parse(e.data);
-        if (msg.color !== undefined) {
-            drawPixel(msg.x, msg.y,
-                msg.color.red,
-                msg.color.green,
-                msg.color.blue,
-                msg.color.alpha);
-        }
-        else if (msg.instruction !== undefined) {
-            if (msg.instruction === "RELOAD") return loadData();
-            if (msg.instruction === "CLEAR") return clearCanvas().then(redrawData);
-        }
-        else {
-            console.warn("unrecognized message in feed: " + msg);
         }
     }
 

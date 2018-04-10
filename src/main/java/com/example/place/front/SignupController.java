@@ -2,6 +2,7 @@ package com.example.place.front;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Map;
 
 import com.example.place.server.auth.ITokenSenderService;
 import com.example.place.server.auth.TokenService;
@@ -10,6 +11,10 @@ import com.example.place.server.user.UserRepository;
 import reactor.core.publisher.Mono;
 
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,12 +32,14 @@ public class SignupController {
 	private final TokenService        tokenService;
 	private final ITokenSenderService tokenSenderService;
 	private final UserRepository      userRepository;
+	private final ReactiveAuthenticationManager authenticationManager;
 
 	public SignupController(TokenService tokenService, ITokenSenderService tokenSenderService,
-			UserRepository userRepository) {
+			UserRepository userRepository, ReactiveAuthenticationManager manager) {
 		this.tokenService = tokenService;
 		this.tokenSenderService = tokenSenderService;
 		this.userRepository = userRepository;
+		authenticationManager = manager;
 	}
 
 	@GetMapping("/signup")
@@ -60,12 +67,25 @@ public class SignupController {
 	}
 
 	@GetMapping("/signup/{token}")
-	public String signup(@RequestParam("uid") String uid, @PathVariable("token") String token) {
+	public Mono<String> signup(@RequestParam("uid") String uid, @PathVariable("token") String token,
+			Map<String, String> model) {
 		if (tokenService.authenticate(uid, token)) {
-			return "redirect:/login";
+			Authentication authenticationToken = new UsernamePasswordAuthenticationToken(uid, token);
+			return authenticationManager
+					.authenticate(authenticationToken)
+					.map(authenticated -> {
+						if (!authenticated.isAuthenticated()) {
+							return "invalid_login_from_link";
+						}
+
+						model.put("email", uid);
+						model.put("token", token);
+						return "autologin";
+					})
+					.onErrorReturn(BadCredentialsException.class, "invalid_login_from_link");
 		}
 		else {
-			return "invalid_login_link";
+			return Mono.just("invalid_signup_link");
 		}
 	}
 
