@@ -12,6 +12,7 @@ public class SignupProperties {
 
 	private String siteUrl;
 	private String method;
+	private String admin;
 
 	public String getSiteUrl() {
 		return siteUrl;
@@ -27,5 +28,13 @@ public class SignupProperties {
 
 	public void setMethod(String method) {
 		this.method = method;
+	}
+
+	public void setAdmin(String admin) {
+		this.admin = admin;
+	}
+
+	public String getAdmin() {
+		return admin;
 	}
 }

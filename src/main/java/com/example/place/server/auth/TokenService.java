@@ -2,7 +2,6 @@ package com.example.place.server.auth;
 
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -36,6 +35,11 @@ public class TokenService implements ReactiveUserDetailsService {
 
 	private final SecureRandom random = new SecureRandom();
 
+	private final SignupProperties signupProperties;
+
+	public TokenService(SignupProperties properties) {
+		signupProperties = properties;
+	}
 
 	public String createToken(String userEmail) {
 		Objects.requireNonNull(userEmail,"user email can't be null");
@@ -58,11 +62,17 @@ public class TokenService implements ReactiveUserDetailsService {
 		String expectedToken = get(uid);
 		if (expectedToken != null) {
 			if (!expectedToken.equals(token)) return false;
-			userDetails.put(uid, User.withDefaultPasswordEncoder()
-			                         .username(uid)
-			                         .password(token)
-			                         .roles("USER")
-			                         .build());
+
+			User.UserBuilder builder = User.withDefaultPasswordEncoder()
+			                               .username(uid)
+			                               .password(token);
+			if (signupProperties.getAdmin() != null && signupProperties.getAdmin().equals(uid)) {
+				builder = builder.roles("USER", "ADMIN");
+			} else {
+				builder = builder.roles("USER");
+			}
+
+			userDetails.put(uid, builder.build());
 			return true;
 		} else {
 			UserDetails ud = userDetails.getIfPresent(uid);
