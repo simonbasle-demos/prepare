@@ -95,10 +95,14 @@ public class CanvasService {
 	}
 
 	public Mono<Void> setPixelAt(int x, int y, Color color) {
+		return preparePixelAt(x, y, color)
+				.doOnNext(updateSink::next)
+				.then();
+	}
+
+	public Mono<Pixel> preparePixelAt(int x, int y, Color color) {
 		return repository.save(new Pixel(x, y, color))
-		                 .doOnNext(pixel -> canvas[x][y] = pixel)
-		                 .doOnNext(updateSink::next)
-		                 .then();
+		                 .doOnNext(pixel -> canvas[x][y] = pixel);
 	}
 
 }

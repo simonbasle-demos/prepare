@@ -162,10 +162,11 @@ public class AdminController {
 			}
 			sink.complete();
 		})
-		           .flatMap(pixel -> canvasService.setPixelAt(
+		           .flatMap(pixel -> canvasService.preparePixelAt(
 				           pixel.getX(),
 				           pixel.getY(),
 				           pixel.getColor()))
+		           .then(Mono.fromRunnable(canvasService::resendCanvas))
 		           .then(Mono.just("painted"));
 	}
 
