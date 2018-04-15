@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 
 import com.example.place.server.canvas.CanvasRepository;
@@ -13,10 +15,12 @@ import com.example.place.server.data.Pixel;
 import com.example.place.server.rate.RateLimitingService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.Nullable;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -77,6 +81,45 @@ public class AdminController {
 			return ResponseEntity.ok(delay + "ms");
 		}
 		return ResponseEntity.badRequest().build();
+	}
+
+	private static final Pattern SET_DELAY_PATTERN = Pattern.compile("([0-9]+)(s|m|h|ms)");
+
+	@Nullable
+	public static Duration parseDelay(String delay) {
+		Matcher matcher = SET_DELAY_PATTERN.matcher(delay);
+		if (matcher.matches()) {
+			Integer delayPart = Integer.parseInt(matcher.group(1));
+			String type = matcher.group(2);
+
+			if (delayPart == 0) {
+				return Duration.ZERO;
+			}
+
+			switch (type) {
+				case "s":
+					return Duration.ofSeconds(delayPart);
+				case "ms":
+					return Duration.ofMillis(delayPart);
+				case "h":
+					return Duration.ofHours(delayPart);
+				case "m":
+					return Duration.ofMinutes(delayPart);
+				default:
+					return Duration.ZERO;
+			}
+		}
+		return null;
+	}
+
+	@GetMapping(value = "/admin/rate/{delay}")
+	public ResponseEntity setRateConvenience(@PathVariable String delay) {
+		Duration newDelay = parseDelay(delay);
+		if (newDelay != null) {
+			rateLimitingService.setDelay(newDelay);
+			return ResponseEntity.ok("set " + delay + ", interpreted as " + newDelay.toMillis() + "ms");
+		}
+		return ResponseEntity.badRequest().body("incorrect delay format " + delay);
 	}
 
 	@GetMapping("/admin/paint")
