@@ -52,6 +52,13 @@ public class CanvasService {
 	}
 
 	public Flux<Pixel> loadData() {
+		return repository.findAll()
+		                 .doOnSubscribe(sub -> System.out.println("Loading Canvas from DB"))
+		                 .doOnNext(pixel -> canvas[pixel.getX()][pixel.getY()] = pixel)
+		                 .doOnComplete(() -> System.out.println("Canvas Loaded"));
+	}
+
+	public Flux<Pixel> loadDataOrGenerate() {
 		return repository.count()
 		                 .flatMapMany(size  -> size == ROWS * COLUMNS
 				                 ? repository.findAll()

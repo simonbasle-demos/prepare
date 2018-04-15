@@ -34,4 +34,9 @@ public class PlaceApplication {
 		return new EmailTokenSenderService(emailConf, signupConf);
 	}
 
+	@Bean
+	protected CommandLineRunner initDB(@Autowired CanvasService canvasService) {
+		return args -> canvasService.loadData().blockLast();
+	}
+
 }
